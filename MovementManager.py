@@ -13,11 +13,12 @@ import OptimalPlanning as op
 import Constants as cons
 
 class Robot(thr.Thread):
-    def __init__(self, robot_handle, path, client_id):
+    def __init__(self, robot_handle, path, client_id, callback=None):
         thr.Thread.__init__(self)
         self.robot_handle = robot_handle
         self.path = path
         self.client_id = client_id
+        self.callback = callback
 
     def run(self):
         """
@@ -27,9 +28,8 @@ class Robot(thr.Thread):
             ret_code = vrep.simxSetObjectPosition(self.client_id, self.robot_handle, -1, \
                                                   (state.getX(), state.getY(), 0.3), vrep.simx_opmode_oneshot)
             time.sleep(0.2)
-        if thr.active_count() == 2:
-            vrep.simxStopSimulation(self.client_id, vrep.simx_opmode_oneshot_wait)
-            vrep.simxFinish(self.client_id)
+        if self.callback is not None:
+            self.callback()
 
 class Vrep():
     def __init__(self):
@@ -129,7 +129,7 @@ class Controller():
                   .format(sum, estimated_time))
             for robot in self.robots:
                 robot_thread = Robot(robot, robots_paths[str(robot)], \
-                                     self.vrep_con.client_id)
+                                     self.vrep_con.client_id, callback=self.on_thread_finished)
                 robot_thread.start()
 
     def target_assignment(self):
@@ -138,10 +138,10 @@ class Controller():
         """
         start_time = time.time()
         paths = {}
-        for start_state in self.robots:
+        for robot in self.robots:
             min_path_length = float('Inf')
             for target in self.targets:
-                robot_pos = self.vrep_con.get_object_position(start_state)
+                robot_pos = self.vrep_con.get_object_position(robot)
                 target_pos = self.vrep_con.get_object_position(target)
                 path = self.plan(robot_pos, target_pos, None)
                 if path.length() < min_path_length:
@@ -149,7 +149,7 @@ class Controller():
                     #paths[str(start_state)] = path
                     min_path_length = path.length()
             goal_pos = self.vrep_con.get_object_position(chosen_target)
-            paths[str(start_state)] = self.plan(robot_pos, goal_pos, cons.PLANNER_RANGE)
+            paths[str(robot)] = self.plan(robot_pos, goal_pos, cons.PLANNER_RANGE)
             self.targets.remove(chosen_target)
         final_time = time.time() - start_time
         return paths, final_time
@@ -241,10 +241,10 @@ class Controller():
             print("No solution found")
             return None
 
-    #def are_targets_reached(self):
-    #    if thr.active_count() == 2:
-    #        vrep.simxStopSimulation(self.vrep_con.client_id, vrep.simx_opmode_oneshot_wait)
-    #        vrep.simxFinish(self.vrep_con.client_id)
+    def on_thread_finished(self):
+        if thr.active_count() == 2:
+            vrep.simxStopSimulation(self.vrep_con.client_id, vrep.simx_opmode_oneshot_wait)
+            vrep.simxFinish(self.vrep_con.client_id)
 
 if __name__ == "__main__":
     solving = Controller()
