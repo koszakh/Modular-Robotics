@@ -4,9 +4,9 @@
         "PLATFORMIO_CALLER": "vscode"
     },
     "files.associations": {
+        "type_traits": "cpp",
+        "system_error": "cpp",
         "array": "cpp",
-        "deque": "cpp",
-        "vector": "cpp",
         "*.tcc": "cpp",
         "cctype": "cpp",
         "clocale": "cpp",
@@ -20,8 +20,10 @@
         "ctime": "cpp",
         "cwchar": "cpp",
         "cwctype": "cpp",
+        "deque": "cpp",
         "unordered_map": "cpp",
         "unordered_set": "cpp",
+        "vector": "cpp",
         "exception": "cpp",
         "fstream": "cpp",
         "functional": "cpp",
@@ -37,8 +39,6 @@
         "sstream": "cpp",
         "stdexcept": "cpp",
         "streambuf": "cpp",
-        "system_error": "cpp",
-        "type_traits": "cpp",
         "tuple": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp"
