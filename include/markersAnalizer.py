@@ -1,70 +1,103 @@
 from math import sqrt, degrees, acos
-import cv2
-from cv2 import aruco
+from matplotlib.path import Path
+import numpy as np
+
 
 class markersAnalizer():
     def __init__(self):
         self.__robots = {}
-        self.__walls = {}
+        self.__obstacles = {}
         self.__goals = {}
+        self.__tagets_bbox = {}
 
     def get_robots(self):
         return self.__robots
 
-    def get_walls(self):
-        return self.__walls
+    def get_obstacles(self):
+        return self.__obstacles
 
     def get_goals(self):
         return self.__goals
 
-    def detect_markers(self, img, aruco_dict, parameters):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        corners, ids, _ = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
-        return corners, ids
+    def get_goals_bbox(self):
+        return self.__tagets_bbox
+
+    def get_full_obstacles(self):
+        obstacles_points = []
+        for key in self.__obstacles.keys():
+            obstacles_points.append(Path(np.array(self.__obstacles[key])))
+        return obstacles_points
+
+    def convert_to_ompl_coordinate_system(self, markers_dict):
+        for key in markers_dict.keys():
+            markers_dict[key] = self.remap_to_ompl(markers_dict[key])
+        return markers_dict
+
+    def remap_to_ompl(self, x):
+        new_x = x*10./480. - 5.
+        return new_x
+
+    def remap_to_cv(self, x):
+        new_x = int((x + 5)*480/10)
+        return new_x
 
     def parse_ids(self, markers_dict):
-        """ This func create dictionaries: robots, walls, goals.
-            Key is ID. Value is center (for robots and goals) or corners (for walls). """
+        """ This func create dictionaries: robots, obstacles, goals.
+            Key is ID. Value is center (for robots and goals) or corners (for obstacles). """
         tmp_markers_dict = {}
+        tmp_goals_cnts_dict = {}
+        tmp_goals_bbox_dict = {}
+
         for id in markers_dict.keys():
             if len(str(id)) == 1:
-                robot_cntr = self.get_marker_cntr(markers_dict[id])
-                robot_direction = self.get_marker_direction(markers_dict[id])
+                robot_cntr = self.get_marker_cntr(markers_dict[id].tolist())
+                robot_direction = self.get_marker_direction(markers_dict[id].tolist())
                 self.__robots[id] = [robot_cntr, robot_direction]
             elif len(str(id)) == 3:
-                self.__goals[id] = markers_dict[id]
+                tmp_goals_cnts_dict[id] = self.get_marker_cntr(markers_dict[id].tolist())
+                tmp_goals_bbox_dict[id] = markers_dict[id].tolist()
             else:
                 if not id in tmp_markers_dict.keys():
-                    tmp_markers_dict[id] = markers_dict[id]
+                    tmp_markers_dict[id] = self.sort_obstacles_corners(markers_dict[id].tolist())
                 else:
-                    tmp_markers_dict[id] = [markers_dict[id], tmp_markers_dict[id]]
-        walls_markers_dict = self.create_walls_markers_dict(tmp_markers_dict)
-        self.__walls = self.get_wall_corners(walls_markers_dict)
+                    tmp_markers_dict[id] = [markers_dict[id].tolist(), tmp_markers_dict[id]]
+        obstacles_markers_dict = self.create_obstacles_markers_dict(tmp_markers_dict)
+        self.goals_cnt_id_from_platform_id(tmp_goals_cnts_dict)
+        self.goals_bbox_id_from_platform_id(tmp_goals_bbox_dict)
+        self.__obstacles = self.get_obstacles_corners(obstacles_markers_dict)
 
-    def create_walls_markers_dict(self, markers_dict):
+    def goals_cnt_id_from_platform_id(self, goals_dict):
+        for (plarform_id, target_id) in list(zip(self.__robots.keys(), goals_dict.keys())):
+            self.__goals[plarform_id] = goals_dict[target_id]
+
+    def goals_bbox_id_from_platform_id(self, goals_dict):
+        for (plarform_id, target_id) in list(zip(self.__robots.keys(), goals_dict.keys())):
+            self.__tagets_bbox[plarform_id] = goals_dict[target_id]
+
+    def create_obstacles_markers_dict(self, markers_dict):
         """ Every wall marked up by two markers.
-            So we need to find wall's 4 corners from 8 marker's corners and put them into a walls dict.
+            So we need to find wall's 4 corners from 8 marker's corners and put them into a obstacles dict.
             This func create dict with structure: {ID: [the first marker's corners, the second marker's corners]}"""
-        walls = {}
+        obstacles = {}
         for corners_key in markers_dict:
             id = corners_key // 10
-            if not id in walls.keys():
-                walls[id] = markers_dict[corners_key]
+            if not id in obstacles.keys():
+                obstacles[id] = markers_dict[corners_key]
             else:
-                walls[id] = [walls[id], markers_dict[corners_key]]
-        return walls
+                obstacles[id] = [obstacles[id], markers_dict[corners_key]]
+        return obstacles
 
     def get_distance_between_pts(self, pt1, pt2):
         return sqrt((pt2[0] - pt1[0])**2 + (pt2[1] - pt1[1])**2)
 
-    def get_wall_corners(self, walls_markers_dict):
-        """ Extract walls corners from walls_markers_dict """
-        walls_corners = {}
-        for key in walls_markers_dict.keys():
-            corners = walls_markers_dict[key]
+    def get_obstacles_corners(self, obstacles_markers_dict):
+        """ Extract obstacles corners from obstacles_markers_dict """
+        obstacles_corners = {}
+        for key in obstacles_markers_dict.keys():
+            corners = obstacles_markers_dict[key]
             if len(corners) >= 2:
-                sqr1 = corners[0].tolist()
-                sqr2 = corners[1].tolist()
+                sqr1 = corners[0]
+                sqr2 = corners[1]
 
                 cntr1 = self.get_marker_cntr(sqr1)
                 cntr2 = self.get_marker_cntr(sqr2)
@@ -105,10 +138,27 @@ class markersAnalizer():
                     if lenghts2_copy[i] > max4:
                         max4 = lenghts2_copy[i]
 
-                walls_corners[key] = [sqr1[lenghts1.index(max1)], sqr1[lenghts1.index(max2)],
-                                      sqr2[lenghts2.index(max3)], sqr2[lenghts2.index(max4)]]
+                obstacles_corners[key] = self.sort_obstacles_corners([sqr1[lenghts1.index(max1)],
+                                                                      sqr1[lenghts1.index(max2)],
+                                                                      sqr2[lenghts2.index(max3)],
+                                                                      sqr2[lenghts2.index(max4)]])
+        return obstacles_corners
 
-        return walls_corners
+    def sort_obstacles_corners(self, corners):
+        init_corner = corners.pop(0)
+        sorted_corners = [init_corner]
+        while len(corners) != 1:
+            distances = []
+            for corner in corners:
+                distances.append(self.compute_distance(init_corner, corner))
+            init_corner = corners.pop(distances.index(min(distances)))
+            sorted_corners.append(init_corner)
+        sorted_corners.append(corners[0])
+        return sorted_corners
+
+    def compute_distance(self, pt1, pt2):
+        distance = sqrt((pt1[0] - pt2[0])**2 + (pt1[1] - pt2[1])**2)
+        return distance
 
     def get_marker_cntr(self, sqr):
         front_left_corner = sqr[0]
@@ -117,7 +167,7 @@ class markersAnalizer():
         return cntr
 
     def get_line_cntr(self, pt1, pt2):
-        line_cntr = tuple(map(lambda x: int(x), ((pt1[0] + pt2[0] ) / 2, (pt1[1] + pt2[1]) / 2)))
+        line_cntr = tuple(map(lambda x: x, ((pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2)))
         return line_cntr
 
     def get_marker_direction(self, sqr):

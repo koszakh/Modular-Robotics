@@ -18,6 +18,7 @@ class Controller():
         self.targets = self.vrep_con.get_object_childs(const.TARGETS_NAMES_TREE)
         self.obstacles = list(map(lambda x: self.vrep_con.get_boundary_points(x), \
                                              self.vrep_con.get_object_childs(const.OBSTACLES_NAMES_TREE)))
+        print(self.obstacles)
         #self.full_obstacles = self.obstacles + list(map(lambda x: self.vrep_con.get_boundary_points(x), \
         #                                    self.vrep_con.get_object_childs(const.TARGETS_NAMES_TREE)))
         #for obstacle in self.full_obstacles:
@@ -29,6 +30,7 @@ class Controller():
             print('Connected to remote API server')
             print("Число роботов: {0}".format(len(self.robots)))
             robots_paths, estimated_time = self.target_assignment()
+
             for i in range(len(self.robots)):
                 path = robots_paths[str(self.robots[i])]
                 print("Робот №{0} имеет путь, состоящий из {1} точек, длиной {2}" \
@@ -39,6 +41,11 @@ class Controller():
             print("Сумма длин всех путей: {0}\nВремя, затраченное на планирование пути: {1}" \
                   .format(sum, estimated_time))
             port_num = const.CON_PORT + 1
+
+
+            # Robots moution
+
+
             #robot1_thread = Robot(self.robots[0], robots_paths[str(self.robots[0])], \
             #                      port_num, callback=self.on_thread_finished)
             #robot1_thread.start()
@@ -64,17 +71,21 @@ class Controller():
             avoidable_targets = []
             min_path_length = float('Inf')
             for target in self.targets:
-                robot_pos = self.vrep_con.get_object_position(robot, -1)
-                target_pos = self.vrep_con.get_object_position(target, -1)
+                robot_pos = self.vrep_con.get_object_position(robot, -1)  # Robot_position from marker
+                target_pos = self.vrep_con.get_object_position(target, -1)  # Goal pos from marker
+                print("test", robot_pos, target_pos, self.obstacles)
+
                 path = self.plan(robot_pos, target_pos, None, self.obstacles)
                 if path.length() < min_path_length:
                     chosen_target = target
                     min_path_length = path.length()
             goal_pos = self.vrep_con.get_object_position(chosen_target, -1)
+
             avoidable_targets = self.targets.copy()
             avoidable_targets.remove(chosen_target)
-            full_obstacles = self.obstacles + list(map(lambda x: self.vrep_con.get_boundary_points(x), \
-                                             avoidable_targets))
+            full_obstacles = self.obstacles + list(map(lambda x: self.vrep_con.get_boundary_points(x), avoidable_targets))
+            print(full_obstacles)
+
             paths[str(robot)] = self.plan(robot_pos, goal_pos, const.PLANNER_RANGE, full_obstacles)
             self.targets.remove(chosen_target)
         final_time = time() - start_time
@@ -182,6 +193,7 @@ class Controller():
         """
         space = self.space_creation()
         space_info = self.space_info_creation(space, obstacles)
+
         pdef = self.problem_definition(space, space_info, start_pos, goal_pos)
         optimizing_planner = self.allocate_planner(space_info, pdef, planner_range)
         solved = optimizing_planner.solve(const.RUN_TIME)
