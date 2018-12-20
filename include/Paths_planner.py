@@ -30,24 +30,27 @@ class Paths_planner():
         paths = {}
 
         for robot_id in self.robots.keys():
-            print("ID", robot_id)
             robot_pos = self.robots[robot_id][0]
-            target_pos = self.targets[robot_id]
             targets_corners = self.targets_corners.copy()
-            print("targets_corners", targets_corners[robot_id])
-            print("target_pos", target_pos)
-            targets_corners.pop(robot_id)
-            print("T c", targets_corners)
-            full_obstacles = self.obstacles
-
-            # Solution not found =(
-            # for id in targets_corners.keys():
-            #     full_obstacles.append(Path(np.array(targets_corners[id])))
-
+            target_pos = self.get_marker_cntr(targets_corners.pop(robot_id))
+            full_obstacles = self.obstacles.copy()
+            for id in targets_corners.keys():
+                full_obstacles.append(Path(np.array(targets_corners[id])))
             paths[robot_id] = self.plan(robot_pos, target_pos, None, full_obstacles)
 
         final_time = time() - start_time
         return paths, final_time
+
+    def get_line_cntr(self, pt1, pt2):
+        line_cntr = tuple(map(lambda x: x, ((pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2)))
+        return line_cntr
+
+
+    def get_marker_cntr(self, sqr):
+        front_left_corner = sqr[0]
+        behind_right_corner = sqr[2]
+        cntr = self.get_line_cntr(front_left_corner, behind_right_corner)
+        return cntr
 
     def set_robots(self, robots_dict):
         self.robots = robots_dict
@@ -121,7 +124,7 @@ class Paths_planner():
         ps = og.PathSimplifier(space_info)
         shorteningPath = ps.shortcutPath(path)
         reduceVertices = ps.reduceVertices(path)
-        path.interpolate(int(path.length() * 10))
+        path.interpolate(int(path.length() * 2))
         return path
 
     def space_creation(self):
