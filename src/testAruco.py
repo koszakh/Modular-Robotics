@@ -1,7 +1,7 @@
 from include import vrep
 import cv2
 from cv2 import aruco
-from include.markersAnalizer import markersAnalizer
+from include.markersAnalizer1 import markersAnalizer
 from include.Paths_planner import Paths_planner
 from include.visualization_tools import *
 
@@ -71,7 +71,8 @@ if __name__ == "__main__":
 
     paths, final_time = planner.multiple_paths_planning()
     for path_id in paths.keys():
-        states = paths[path_id].getStates()
+        ret = paths[path_id][0]
+        states = paths[path_id][1].getStates()
         for state in states:
             x = state.getX()
             y = state.getY()

@@ -9,6 +9,7 @@ import include.vrep as vrep
 import include.Constants as const
 from functools import partial
 
+
 class Controller():
     def __init__(self):
         vrep.simxFinish(-1)

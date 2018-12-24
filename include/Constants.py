@@ -8,7 +8,7 @@ OBSTACLES_NAMES_TREE = 'OuterWalls'
 LOW_BOUNDS = -5.
 HIGH_BOUNDS = 5.
 PLANNER_TYPE = 'rrtconnect'
-PLANNER_RANGE = 0.1
+PLANNER_RANGE = 0.05
 RUN_TIME = 1
 INIT_SPEED = 2
 ROTATION_SPEED = 0.5
@@ -21,3 +21,8 @@ kd = 0.00009
 #kd = 0.0001
 iMin = -0.2
 iMax = 0.2
+
+
+# cv2 constants
+IMAGE_SIZE = 480
+CAMERA_INDEX = 0

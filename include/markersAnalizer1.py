@@ -1,7 +1,6 @@
 from math import sqrt, degrees, acos
 from matplotlib.path import Path
 import numpy as np
-from include.Constants import IMAGE_SIZE, LOW_BOUNDS, HIGH_BOUNDS
 
 
 class markersAnalizer():
@@ -9,6 +8,7 @@ class markersAnalizer():
         self.__robots = {}
         self.__obstacles = {}
         self.__goals = {}
+        self.__tagets_bbox = {}
 
     def get_robots(self):
         return self.__robots
@@ -18,6 +18,9 @@ class markersAnalizer():
 
     def get_goals(self):
         return self.__goals
+
+    def get_goals_bbox(self):
+        return self.__tagets_bbox
 
     def get_full_obstacles(self):
         obstacles_points = []
@@ -30,13 +33,13 @@ class markersAnalizer():
             markers_dict[key] = self.remap_to_ompl(markers_dict[key])
         return markers_dict
 
-    def remap_to_ompl(self, val):
-        remaped_val = val * (HIGH_BOUNDS - LOW_BOUNDS) / IMAGE_SIZE + LOW_BOUNDS
-        return remaped_val
+    def remap_to_ompl(self, x):
+        new_x = x*10./480. - 5.
+        return new_x
 
-    def remap_to_cv(self, val):
-        remaped_val = int((val + HIGH_BOUNDS) * IMAGE_SIZE / (HIGH_BOUNDS - LOW_BOUNDS))
-        return remaped_val
+    def remap_to_cv(self, x):
+        new_x = int((x + 5)*480/10)
+        return new_x
 
     def parse_ids(self, markers_dict):
         """ This func create dictionaries: robots, obstacles, goals.
@@ -47,15 +50,17 @@ class markersAnalizer():
 
         for id in markers_dict.keys():
             if len(str(id)) == 1:
-                self.__robots[id] = markers_dict[id]
+                robot_cntr = self.get_marker_cntr(markers_dict[id].tolist())
+                robot_direction = self.get_marker_direction(markers_dict[id].tolist())
+                self.__robots[id] = [robot_cntr, robot_direction]
             elif len(str(id)) == 3:
-                tmp_goals_cnts_dict[id] = markers_dict[id]
+                tmp_goals_cnts_dict[id] = self.get_marker_cntr(markers_dict[id].tolist())
+                tmp_goals_bbox_dict[id] = markers_dict[id].tolist()
             else:
-                if id not in tmp_markers_dict.keys():
-                    tmp_markers_dict[id] = self.sort_obstacles_corners(markers_dict[id])
+                if not id in tmp_markers_dict.keys():
+                    tmp_markers_dict[id] = self.sort_obstacles_corners(markers_dict[id].tolist())
                 else:
-                    if len(tmp_markers_dict[id]) == 1:
-                        tmp_markers_dict[id] = [markers_dict[id], tmp_markers_dict[id]]
+                    tmp_markers_dict[id] = [markers_dict[id].tolist(), tmp_markers_dict[id]]
         obstacles_markers_dict = self.create_obstacles_markers_dict(tmp_markers_dict)
         self.goals_cnt_id_from_platform_id(tmp_goals_cnts_dict)
         self.goals_bbox_id_from_platform_id(tmp_goals_bbox_dict)
@@ -90,55 +95,58 @@ class markersAnalizer():
         obstacles_corners = {}
         for key in obstacles_markers_dict.keys():
             corners = obstacles_markers_dict[key]
-            print(corners)
+            print(len(corners))
             if len(corners) == 2:
-                if len(corners[0]) == len(corners[1]) == 4:
-                    sqr1 = corners[0]
-                    sqr2 = corners[1]
+                print(corners)
+                sqr1 = corners[0]
+                sqr2 = corners[1]
 
-                    cntr1 = self.get_marker_cntr(sqr1)
-                    cntr2 = self.get_marker_cntr(sqr2)
+                # print(sqr1)
+                # print(sqr2)
 
-                    lengths1 = []
-                    for pt in sqr1:
-                        lengths1.append(self.get_distance_between_pts(pt, cntr2))
+                cntr1 = self.get_marker_cntr(sqr1)
+                cntr2 = self.get_marker_cntr(sqr2)
 
-                    max1 = 0
-                    for i in range(0, len(lengths1)):
-                        if lengths1[i] > max1:
-                            lengths1[i] = lengths1[i] + 0.1
-                            max1 = lengths1[i]
+                lengths1 = []
+                for pt in sqr1:
+                    lengths1.append(self.get_distance_between_pts(pt, cntr2))
 
-                    lengths1_copy = lengths1.copy()
-                    lengths1_copy.remove(max1)
+                max1 = 0
+                for i in range(0, len(lengths1)):
+                    if lengths1[i] > max1:
+                        lengths1[i] = lengths1[i] + 0.1
+                        max1 = lengths1[i]
 
-                    max2 = lengths1_copy[0]
-                    for i in range(1, len(lengths1_copy)):
-                        if lengths1_copy[i] > max2:
-                            max2 = lengths1_copy[i]
+                lengths1_copy = lengths1.copy()
+                lengths1_copy.remove(max1)
 
-                    lengths2 = []
-                    for pt in sqr2:
-                        lengths2.append(self.get_distance_between_pts(pt, cntr1))
+                max2 = lengths1_copy[0]
+                for i in range(1, len(lengths1_copy)):
+                    if lengths1_copy[i] > max2:
+                        max2 = lengths1_copy[i]
 
-                    max3 = 0
-                    for i in range(0, len(lengths2)):
-                        if lengths2[i] > max3:
-                            lengths2[i] = lengths2[i] + 0.1
-                            max3 = lengths2[i]
+                lengths2 = []
+                for pt in sqr2:
+                    lengths2.append(self.get_distance_between_pts(pt, cntr1))
 
-                    lengths2_copy = lengths2.copy()
-                    lengths2_copy.remove(max3)
+                max3 = 0
+                for i in range(0, len(lengths2)):
+                    if lengths2[i] > max3:
+                        lengths2[i] = lengths2[i] + 0.1
+                        max3 = lengths2[i]
 
-                    max4 = lengths2_copy[0]
-                    for i in range(1, len(lengths2_copy)):
-                        if lengths2_copy[i] > max4:
-                            max4 = lengths2_copy[i]
+                lengths2_copy = lengths2.copy()
+                lengths2_copy.remove(max3)
 
-                    obstacles_corners[key] = self.sort_obstacles_corners([sqr1[lengths1.index(max1)],
-                                                                          sqr1[lengths1.index(max2)],
-                                                                          sqr2[lengths2.index(max3)],
-                                                                          sqr2[lengths2.index(max4)]])
+                max4 = lengths2_copy[0]
+                for i in range(1, len(lengths2_copy)):
+                    if lengths2_copy[i] > max4:
+                        max4 = lengths2_copy[i]
+
+                obstacles_corners[key] = self.sort_obstacles_corners([sqr1[lengths1.index(max1)],
+                                                                      sqr1[lengths1.index(max2)],
+                                                                      sqr2[lengths2.index(max3)],
+                                                                      sqr2[lengths2.index(max4)]])
             else:
                 obstacles_corners[key] = self.sort_obstacles_corners(obstacles_markers_dict[key])
 

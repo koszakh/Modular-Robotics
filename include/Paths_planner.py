@@ -16,9 +16,9 @@ class Paths_planner():
         self.obstacles = []
 
     def multiple_paths_planning(self):
-        print('Program started')
-        print('Connected to remote API server')
-        print("Число роботов: {0}".format(len(self.robots)))
+        # print('Program started')
+        # print('Connected to remote API server')
+        # print("Число роботов: {0}".format(len(self.robots)))
         robots_paths, estimated_time = self.target_assignment()
         return robots_paths, estimated_time
 
@@ -29,14 +29,17 @@ class Paths_planner():
         start_time = time()
         paths = {}
 
-        for robot_id in self.robots.keys():
-            robot_pos = self.robots[robot_id][0]
-            targets_corners = self.targets_corners.copy()
-            target_pos = self.get_marker_cntr(targets_corners.pop(robot_id))
-            full_obstacles = self.obstacles.copy()
-            for id in targets_corners.keys():
-                full_obstacles.append(Path(np.array(targets_corners[id])))
-            paths[robot_id] = self.plan(robot_pos, target_pos, None, full_obstacles)
+        if len(self.robots) == len(self.targets):
+
+            for robot_id in self.robots.keys():
+                robot_pos = self.get_marker_cntr(self.robots[robot_id])
+                targets_corners = self.targets.copy()
+                print(targets_corners)
+                target_pos = self.get_marker_cntr(targets_corners.pop(robot_id))
+                full_obstacles = self.obstacles.copy()
+                for id in targets_corners.keys():
+                    full_obstacles.append(Path(np.array(targets_corners[id])))
+                paths[robot_id] = self.plan(robot_pos, target_pos, const.PLANNER_RANGE, full_obstacles)
 
         final_time = time() - start_time
         return paths, final_time
@@ -56,15 +59,15 @@ class Paths_planner():
         self.robots = robots_dict
 
     def set_obstacles(self, obstacles_dict):
-        self.obstacles = []
-        for val in obstacles_dict.values():
-            self.obstacles.append(Path(np.array(val)))
-        print("self_obs", self.obstacles)
+        self.obstacles = [Path(np.array(val)) for val in list(obstacles_dict.values())]
+
 
     def set_targets(self, goals_dict):
+        self.targets = {}
         self.targets = goals_dict
 
     def set_targets_corners(self, corners):
+        self.targets_corners = []
         self.targets_corners = corners
 
     def plan(self, start_pos, goal_pos, planner_range, obstacles):
