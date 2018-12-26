@@ -46,7 +46,7 @@ void  MotorController::setPinsValuesMotorDriver (motor* motorStruct, bool up, bo
     digitalWrite(motorStruct->pin_forward, up);
 	digitalWrite(motorStruct->pin_back, down);
 	ledcWrite(motorStruct->channel, speed);
-	Serial.println(speed);
+	//Serial.println(speed);
 }
 // эта функция обеспечит вращение двигателей в двух направлениях на установленной скорости
 void MotorController::rotation(motor* motorStruct, short Speed, short Side)
@@ -64,9 +64,35 @@ void MotorController::rotation(motor* motorStruct, short Speed, short Side)
 	}
 }
 // контроль вращения двигателем на основе данных с джойстика
-void MotorController::controlByJoystick(short xCoord, short yCoord, float reduceSpeed, float reduceSpeedSide)
+void MotorController::controlByCamera(short correctValue, float reduceSpeed, float reduceSpeedSide)
 {
-	if ((xCoord > -500 && xCoord < 500) && yCoord < -500) {
+	rotation(MotorRight, 110, 1);
+	rotation(MotorLeft, 110, 1);
+	delay(correctValue*12);
+	rotation(MotorLeft, 150, 0);
+	rotation(MotorRight,150, 0);
+
+	// if (correctValue == 0) {
+	// 	rotation(MotorLeft, 150, -1);
+	// 	rotation(MotorRight,150, 1);
+	// 	//Serial.println("Moving forward");
+	// }
+	// else if (correctValue == 1) {
+	// 	rotation(MotorRight, 110, 1);
+	// 	rotation(MotorLeft, 110, 1);
+	// 	//Serial.println("Moving right");
+	// }
+	// else if (correctValue == 2) {
+	// 	rotation(MotorRight,150, -1);
+	// 	rotation(MotorLeft, 150, -1);
+	// 	//Serial.println("Moving left");
+	// }
+	// else {
+	// 	rotation(MotorRight,100, 0);
+	// 	rotation(MotorLeft, 100, 0);
+	// 	//Serial.println("Stop");
+	
+	/*if ((xCoord > -500 && xCoord < 500) && yCoord < -500) {
 
 	    rotation(MotorLeft, abs(yCoord/reduceSpeed), -yCoord);
 		rotation(MotorRight,abs(yCoord/reduceSpeed), yCoord);
@@ -74,14 +100,14 @@ void MotorController::controlByJoystick(short xCoord, short yCoord, float reduce
 	}
 	
 	else if (xCoord >= 500 && yCoord <= 500) {
-		rotation(MotorRight, abs(xCoord/reduceSpeedSide), -yCoord);
-		rotation(MotorLeft, abs(xCoord/reduceSpeedSide), 0);
+		rotation(MotorRight, abs(xCoord/reduceSpeedSide), yCoord);
+		rotation(MotorLeft, abs(xCoord/reduceSpeedSide), yCoord);
 		Serial.println("Moving right");
 	}
 
 	else if (xCoord < -500 && yCoord <= 500) {
-		rotation(MotorRight,abs(xCoord/reduceSpeedSide), 0);
-		rotation(MotorLeft, abs(xCoord/reduceSpeedSide), yCoord);
+		rotation(MotorRight,abs(xCoord/reduceSpeedSide), -yCoord);
+		rotation(MotorLeft, abs(xCoord/reduceSpeedSide), -yCoord);
 		Serial.println("Moving left");
 	}
 
@@ -91,17 +117,45 @@ void MotorController::controlByJoystick(short xCoord, short yCoord, float reduce
 		Serial.println("Moving back");
 	}
 	//else if (xCoord > 500 && yCoord >= -500) {
-		//rotation(MotorLeft,0/*-yCoord/ (1+(log(10+abs(xCoord)))/4)*/, -yCoord);
+		//rotation(MotorLeft,0/*-yCoord/ (1+(log(10+abs(xCoord)))/4), -yCoord);
 		//rotation(MotorRight, yCoord/reduceSpeed, yCoord);
 		//Serial.println("Moving back left");
 	//}
 	//else if (xCoord < -150 && yCoord <= 0) {
 	   // rotation(MotorLeft, -yCoord/reduceSpeed, -yCoord);
-		//rotation(MotorRight,0/*-yCoord/ (1+(log(10+abs(xCoord)))/4)*/, yCoord);
+		//rotation(MotorRight,0/*-yCoord/ (1+(log(10+abs(xCoord)))/4), yCoord);
 		//Serial.println("Moving back right");
 	//}
 	else {
 		rotation(MotorLeft, 0, 0);
 		rotation(MotorRight, 0, 0);
-	}
+	}*/
+	
+}
+
+void MotorController::rotateLeft(short correctValue)
+{	
+	rotation(MotorRight, 300, 1);
+	rotation(MotorLeft, 300, 1);
+	delay(120);
+	rotation(MotorLeft, 150, 0);
+	rotation(MotorRight,150, 0);
+
+}
+
+void MotorController::rotateRight(short correctValue)
+{	
+	rotation(MotorRight, 300, -1);
+	rotation(MotorLeft, 300, -1);
+	delay(120);
+	// delay(-correctValue*12);
+	rotation(MotorLeft, 150, 0);
+ 	rotation(MotorRight,150, 0);
+
+}
+
+void MotorController::stop(short correctValue)
+{
+	rotation(MotorLeft, 180, -1);
+	rotation(MotorRight, 180, 1);	
 }

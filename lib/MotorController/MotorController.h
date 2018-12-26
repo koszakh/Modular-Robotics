@@ -26,8 +26,13 @@ public:
 
 	void rotation(motor* motorStruct, short Speed, short Side);
 	// контроль вращения двигателем на основе данных с джойстика
-	void controlByJoystick(short xCoord, short yCoord, float reduceSpeed, float reduceSpeedSide);
+	void controlByCamera(short correctValue, float reduceSpeed, float reduceSpeedSide);
+
+	void rotateLeft(short correctValue);
 	// номер канала
+	void rotateRight(short correctValue);
+
+	void stop(short correctValue);
 
 	int channel;
 
