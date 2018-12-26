@@ -20,12 +20,12 @@ mqttClient::mqttClient(const char* ssid, const char* password, const char* mqtt_
 
 void mqttClient::setupWifi()
 {
-    WiFi.begin(SSID, PASSWORD);    
+    WiFi.begin(SSID, PASSWORD);
     delay(500);
-    while (WiFi.status() != WL_CONNECTED) 
+    while (WiFi.status() != WL_CONNECTED)
     {
-        delay(1000);
-    }    
+        delay(500);
+    }
 }
 
 void mqttClient::initClientLoop()
@@ -37,23 +37,25 @@ void mqttClient::subscribe(int platform_id)
 {
     char topic[64];
     char theme[64];
-    sprintf(theme, "%d", platform_id);
-    sprintf(topic, "esp32/%d", platform_id);
+    char client_name[64];
+    sprintf(theme, "Platform %d is connected!", platform_id);
+    sprintf(topic, "platforms/%d", platform_id);
+    sprintf(client_name, "platform_%d", platform_id);
     //Loop until we're reconnected
-    if (!client->connected())
+    while (!client->connected())
     {
         // Attempt to connect
-        if (client->connect("ESP32Client"))
+        if (client->connect(client_name))
         {
-            // Subscribe to topic
             client->subscribe(topic);
-            client->publish("Connected", topic);
+
+            // Subscribe to topic
+            client->publish("connected", theme);
         }
         else
         {
-            // Wait 0.5 seconds before retrying
-            client->publish("Disonnected", topic);
-            delay(500);
+            // Wait some seconds before retrying
+            delay(100);
         }
     }
 }
@@ -75,5 +77,5 @@ void mqttClient::setCallback(void (*callback)(char* topic, byte* message, unsign
 
 void mqttClient:: convertValue(short xValue)
 {
-    
+
 }

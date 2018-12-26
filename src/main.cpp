@@ -43,31 +43,31 @@ float reduceSpeedSide = 5;
 
 char outputData[10] = "Hi";
 
-// const char* ssid = "SPEECH_405";             
-// const char* password = "multimodal";         
+// const char* ssid = "SPEECH_405";
+// const char* password = "multimodal";
 // const char* mqtt_server = "192.168.0.33";
 
-const char* ssid = "iGarage";             
-const char* password = "igarage18";         
+const char* ssid = "iGarage";
+const char* password = "igarage18";
 const char* mqtt_server = "10.1.30.38";
 
 mqttClient mqtt(ssid, password, mqtt_server);
 
 MotorController DriveCar;
 
-void driveMotor(short); 
+void driveMotor(short);
 void parseBLEData(std::string valueFromJoystick);
 
 void callback(char* topic, byte* message, unsigned int length)
-{   
+{
 
     receivedData = "";
 
-    for (int i = 0; i < length; i++) 
+    for (int i = 0; i < length; i++)
     {
         receivedData += (char)message[i];
         //Serial.print((char)message[i]);
-        
+
         //correctValue = atoi(receivedData.c_str());
 
         //driveMotor(correctValue);
@@ -79,8 +79,8 @@ void callback(char* topic, byte* message, unsigned int length)
         //yErrorValue = atoi(valueY.c_str());
         //Serial.print(correctValue);
         //Serial.println(yErrorValue);
-        
-    } 
+
+    }
 
     correctValue = atoi(receivedData.c_str());
     Serial.println(correctValue);
@@ -94,9 +94,8 @@ void callback(char* topic, byte* message, unsigned int length)
 void setup()
 {
     Serial.begin(115200);
-    mqtt.setupWifi();                   
+    mqtt.setupWifi();
     mqtt.setCallback(*callback);
-    mqtt.subscribe(topic_id);
     DriveCar.setup(PIN_ENABLE_R,PIN_FORWARD_R,PIN_BACK_R,PIN_FORWARD_L,PIN_BACK_L,PIN_ENABLE_L, channel_R, channel_L);
     DriveCar.setupMotorDriver(channel_R, channel_L, frequency, resolution);
     pinMode(hallLeftPin, INPUT);
@@ -121,20 +120,22 @@ void driveMotor(short correctValue)
     DriveCar.controlByCamera(correctValue, reduceSpeed, reduceSpeedSide);
     //Serial.println(x);
     //Serial.println(y);
-}   
+}
 
 void loop()
-{   
+{
      correctValue = 0;
      mqtt.initClientLoop();
+     mqtt.subscribe(topic_id);
+
      if (correctValue > 12) {
-         DriveCar.rotateLeft(correctValue);    
+         DriveCar.rotateLeft(correctValue);
      }
      else if (correctValue < -12) {
-         DriveCar.rotateRight(correctValue);        
+         DriveCar.rotateRight(correctValue);
      }
      else if (abs(correctValue) <= 10) {
-         DriveCar.stop(correctValue); 
+         DriveCar.stop(correctValue);
      }
      Serial.println(correctValue);
     // correctValue = 0;
