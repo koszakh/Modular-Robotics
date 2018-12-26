@@ -65,7 +65,7 @@ void mqttClient::pubFeedback(const char* msg, int platform_id)
 {
     char theme[64];
     char topic[64];
-    sprintf(topic, "esp32/feedback/%d", platform_id);
+    sprintf(topic, "feedback/platform_%d", platform_id);
     sprintf(theme, "Message <<%s>> is received!",msg);
     client->publish(topic, theme);
 }
