@@ -33,19 +33,20 @@ class Paths_planner():
             for robot_id in self.robots.keys():
                 tmp_robots = self.robots.copy()
                 tmp_targets = self.targets.copy()
+                robot_position = tmp_robots.pop(robot_id).get_center().remap_to_ompl_coord_system().get_xy()
+                target_position = tmp_targets.pop(robot_id).get_center().remap_to_ompl_coord_system().get_xy()
 
-                robot_position = tmp_robots.pop(robot_id).get_center()
-                target_position = tmp_targets.pop(robot_id).get_center()
 
                 full_obstacles = []
 
-                for obstacle in self.obstacles:
-                    full_obstacles.append(obstacle.get_ompl_path())
-                for target in tmp_targets:
-                    full_obstacles.append(target.get_ompl_path())
-                for robot in tmp_robots:
-                    full_obstacles.append(robot.get_ompl_path())
+                if len(self.obstacles):
+                    for obstacle in self.obstacles:
+                        full_obstacles.append(obstacle.get_ompl_path())
 
+                for target in tmp_targets.values():
+                    full_obstacles.append(target.get_ompl_path())
+                for robot in tmp_robots.values():
+                    full_obstacles.append(robot.get_ompl_path())
                 paths[robot_id] = self.plan(robot_position, target_position, const.PLANNER_RANGE, full_obstacles)
 
         final_time = time() - start_time
@@ -65,7 +66,7 @@ class Paths_planner():
         self.robots = robots_dict
 
     def set_obstacles(self, obstacles_dict):
-        self.obstacles = [Path(np.array(val)) for val in list(obstacles_dict.values())]
+        self.obstacles = list(obstacles_dict.values())
 
     def set_targets(self, goals_dict):
         self.targets = {}

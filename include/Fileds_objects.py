@@ -4,48 +4,13 @@ from matplotlib.path import Path
 from include.Constants import IMAGE_SIZE, HIGH_BOUNDS, LOW_BOUNDS
 
 
-class markerAnalizer:
-    def __init__(self):
-        self.__robots = {}
-        self.__goals = {}
-        self.__obstacles = {}
-
-    def get_robots(self):
-        return self.__robots
-
-    def get_goals(self):
-        return self.__goals
-
-    def get_obstacles(self):
-        return self.__obstacles
-
-    def parse_fields_objects_by_id(self, objects_dict):
-        tmp_obstacles_dict = {}
-        tmp_goals_dict = {}
-        for key in objects_dict.keys():
-            if len(str(key)) == 1:
-                self.__robots[key] = Robot(objects_dict[key])
-            elif len(str(key)) == 3:
-                tmp_goals_dict[key] = Goal(objects_dict[key])
-            else:
-                if key//10 not in tmp_obstacles_dict:
-                    tmp_obstacles_dict[key//10] = [Marker(objects_dict[key])]
-                else:
-                    tmp_obstacles_dict[key // 10].append(Marker(objects_dict[key]))
-        for key in tmp_obstacles_dict.keys():
-            self.__obstacles[key] = Obstacle(tmp_obstacles_dict[key])
-
-        self.set_goals_id_from_platform_id(tmp_goals_dict)
-
-    def set_goals_id_from_platform_id(self, goals_dict):
-        for (platform_id, goal_id) in list(zip(self.__robots.keys(), goals_dict.keys())):
-            self.__goals[platform_id] = goals_dict[goal_id]
-
-
 class Point:
     def __init__(self, xy=(None, None)):
         self.x = xy[0]
         self.y = xy[1]
+
+    def __str__(self):
+        return str(self.x) + " " + str(self.y)
 
     def set_x(self, x):
         self.x = x
@@ -69,29 +34,30 @@ class Point:
     def remap_to_ompl_coord_system(self):
         ompl_x = self.x * (HIGH_BOUNDS - LOW_BOUNDS) / IMAGE_SIZE + LOW_BOUNDS
         ompl_y = self.y * (HIGH_BOUNDS - LOW_BOUNDS) / IMAGE_SIZE + LOW_BOUNDS
-        return ompl_x, ompl_y
+        return Point((ompl_x, ompl_y))
 
     def remap_to_img_coord_system(self):
         img_x = int((self.x + HIGH_BOUNDS) * IMAGE_SIZE / (HIGH_BOUNDS - LOW_BOUNDS))
         img_y = int((self.y + HIGH_BOUNDS) * IMAGE_SIZE / (HIGH_BOUNDS - LOW_BOUNDS))
-        return img_x, img_y
+        return Point((img_x, img_y))
 
 
 class Marker:
     def __init__(self, corners):
-        self.__corners = list(Point(xy) for xy in corners.tolist())
+        self.corners = list(Point(xy) for xy in corners.tolist())
+        self.center = self.get_center()
 
     def get_corners(self):
-        return self.__corners
+        return self.corners
 
     def remap_marker_to_ompl_coord_system(self):
-        ompl_corners = list(xy.remap_to_ompl_coord_system() for xy in self.__corners)
+        ompl_corners = list(xy.remap_to_ompl_coord_system() for xy in self.corners)
         return ompl_corners
 
     def get_center(self):
-        front_left_corner = self.__corners[0]
-        behind_right_corner = self.__corners[2]
-        center = self.get_line_cntr(front_left_corner, behind_right_corner)
+        front_left_corner = self.corners[0]
+        behind_right_corner = self.corners[2]
+        center = Point(self.get_line_cntr(front_left_corner, behind_right_corner))
         return center
 
     def get_line_cntr(self, pt1, pt2):
@@ -108,17 +74,19 @@ class Marker:
 
 
 class Goal(Marker):
-    pass
+    def __init__(self, corners):
+        Marker.__init__(self, corners)
+
 
 
 class Robot(Marker):
     def __init__(self, corners):
-        Marker.__init__(corners)
+        Marker.__init__(self, corners)
         self.direction = self.get_direction()
 
     def get_direction(self):
-        front_left_corner = self.__corners[0]
-        front_right_corner = self.__corners[1]
+        front_left_corner = self.corners[0]
+        front_right_corner = self.corners[1]
         direction_point = self.get_line_cntr(front_left_corner, front_right_corner)
         return direction_point
 
@@ -167,18 +135,19 @@ class Robot(Marker):
 
 class Obstacle:
     def __init__(self, marker_list):
-        unsorted_points = self.get_obstacles_points(marker_list)
+        unsorted_points = self.get_unsorted_obstacles_points(marker_list)
+        self.geometric_center = self.compute_geometric_center(marker_list)
         self.obstacle_points = self.sort_obstacles_points(unsorted_points)
 
-    def get_obstacles_points(self, markers_list, marker_border_points_num=2):
+    def get_obstacle_points(self):
+        return self.obstacle_points
 
+    def get_unsorted_obstacles_points(self, markers_list, marker_border_points_num=2):
         obstacle_border_points = []
-
-        geometric_center = self.get_geometric_center(markers_list)
-
+        geometric_center = self.compute_geometric_center(markers_list)
         for marker in markers_list:
             distances_to_geometric_center = {}
-            for pt in marker:
+            for pt in marker.get_corners():
                 distance = self.get_distance_between_pts(geometric_center, pt)
                 while distance in distances_to_geometric_center:
                     distance += 0.001
@@ -186,15 +155,12 @@ class Obstacle:
             for num in range(marker_border_points_num):
                 obstacle_border_points.append(distances_to_geometric_center.pop(
                                               max(list(distances_to_geometric_center.keys()))))
-                obstacle_border_points.append(distances_to_geometric_center.pop(
-                    max(list(distances_to_geometric_center.keys()))))
-
         return obstacle_border_points
 
     def get_distance_between_pts(self, pt1, pt2):
         return sqrt((pt2.x - pt1.x) ** 2 + (pt2.y - pt1.y) ** 2)
 
-    def get_geometric_center(self, markers_list):
+    def compute_geometric_center(self, markers_list):
         all_points = []
         for marker in markers_list:
             all_points += marker.get_corners()
@@ -204,8 +170,11 @@ class Obstacle:
         max_y = max([pt.y for pt in all_points])
         min_y = min([pt.y for pt in all_points])
 
-        geometric_center = Point((max_x - min_x, max_y - min_y))
+        geometric_center = Point(((max_x + min_x)/2, (max_y + min_y)/2))
         return geometric_center
+
+    def get_geometric_center(self):
+        return self.geometric_center
 
     def sort_obstacles_points(self, corners):
         init_corner = corners.pop(0)
