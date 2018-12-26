@@ -62,18 +62,19 @@ while RUN_CAPTURE:
             if len(paths):
                 for path_id in paths.keys():
                     ret = paths[path_id]
-                    states = paths[path_id].getStates()
-                    for state in states:
-                        x = state.getX()
-                        y = state.getY()
-                        cv_point = Point((x, y)).remap_to_img_coord_system()
-                        cv2.circle(img, (int(cv_point.x), int(cv_point.y)), 5, (255, 0, 255), 2)
-                for obs in obstacles.values():
-                    for pt in obs.get_obstacle_points():
-                        cv2.circle(img, (int(pt.x), int(pt.y)), 3, (255, 0, 0), 5)
+                    if type(ret) != type(None):
+                        states = paths[path_id].getStates()
+                        for state in states[:4]:
+                            x = state.getX()
+                            y = state.getY()
+                            cv_point = Point((x, y)).remap_to_img_coord_system()
+                            cv2.circle(img, (int(cv_point.x), int(cv_point.y)), 5, (255, 0, 255), 2)
+                    for obs in obstacles.values():
+                        for pt in obs.get_obstacle_points():
+                            cv2.circle(img, (int(pt.x), int(pt.y)), 3, (255, 0, 0), 5)
 
-                    c = obs.get_geometric_center()
-                    cv2.circle(img, (int(c.x), int(c.y)), 5, (255, 255, 0), 8)
+                        c = obs.get_geometric_center()
+                        cv2.circle(img, (int(c.x), int(c.y)), 5, (255, 255, 0), 8)
 
         cv2.imshow("Capture", img)
 

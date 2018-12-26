@@ -2,31 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cd0354ef-c4f9-463a-9cb1-7d7226e143d1" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/Modular-Robotics.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/MarkersAnalizer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test_new.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VrepScenes/PathPlanning (aruco).ttt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/VrepScenes/PathPlanning.ttt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/include/Constants.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Controller.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Fileds_objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/include/Fileds_objects.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Paths_planner.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Planner.py" beforeDir="false" afterPath="$PROJECT_DIR$/include/Planner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Robot.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Vrep.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/markersAnalizer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/markersAnalizer1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/visualization_tools.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RealTimePathPlanning.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RunPathPlanning.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/testAruco.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_png.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_new.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_new.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -39,8 +15,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/include/Planner.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="333">
-              <caret line="68" column="54" selection-start-line="68" selection-start-column="54" selection-end-line="68" selection-end-column="54" />
+            <state relative-caret-position="214">
+              <caret line="36" selection-start-line="36" selection-end-line="36" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -51,11 +27,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/test_new.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="5" column="50" selection-start-line="5" selection-start-column="50" selection-end-line="5" selection-end-column="50" />
+            <state relative-caret-position="520">
+              <caret line="76" selection-start-line="76" selection-end-line="76" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
-                <marker date="1545840156519" expanded="true" signature="2657:2762" ph="..." />
+                <marker date="1545840507881" expanded="true" signature="2479:2582" ph="..." />
               </folding>
             </state>
           </provider>
@@ -381,18 +357,18 @@
     <frame x="45" y="-14" width="1876" height="1095" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15002698" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15002698" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32919255" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.25569358" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.112836435" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39958593" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32919255" />
-      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.28881988" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.28881988" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.7215321" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -578,16 +554,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/Planner.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="333">
-          <caret line="68" column="54" selection-start-line="68" selection-start-column="54" selection-end-line="68" selection-end-column="54" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/include/Fileds_objects.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
@@ -605,13 +571,23 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/include/Planner.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="214">
+          <caret line="36" selection-start-line="36" selection-end-line="36" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/test_new.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" column="50" selection-start-line="5" selection-start-column="50" selection-end-line="5" selection-end-column="50" />
+        <state relative-caret-position="520">
+          <caret line="76" selection-start-line="76" selection-end-line="76" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
-            <marker date="1545840156519" expanded="true" signature="2657:2762" ph="..." />
+            <marker date="1545840507881" expanded="true" signature="2479:2582" ph="..." />
           </folding>
         </state>
       </provider>
