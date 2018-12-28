@@ -1,5 +1,6 @@
 from include.Fileds_objects import Robot, Goal, Obstacle, Marker
-
+from include.Constants import EPS
+from math import sqrt
 
 class MarkerAnalizer:
     def __init__(self):
@@ -40,3 +41,14 @@ class MarkerAnalizer:
     def set_goals_id_from_platform_id(self, goals_dict):
         for (platform_id, goal_id) in list(zip(self.__robots.keys(), goals_dict.keys())):
             self.__goals[platform_id] = goals_dict[goal_id]
+
+    def on_position(self, robot_position, target_position):
+        on_target_point = False
+        distance = self.get_distance_between_pts(robot_position, target_position)
+        if distance <= EPS: on_target_point = True
+        return on_target_point
+
+    def get_distance_between_pts(self, pt1, pt2):
+        return sqrt((pt2.x - pt1.x) ** 2 + (pt2.y - pt1.y) ** 2)
+
+

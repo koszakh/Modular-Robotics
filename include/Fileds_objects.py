@@ -87,12 +87,12 @@ class Robot(Marker):
     def get_direction(self):
         front_left_corner = self.corners[0]
         front_right_corner = self.corners[1]
-        direction_point = self.get_line_cntr(front_left_corner, front_right_corner)
+        direction_point = Point(self.get_line_cntr(front_left_corner, front_right_corner))
         return direction_point
 
     def get_angle_to_point(self, destination_point):
         dir_vec = Point(((self.direction.x - self.center.x), (self.direction.y - self.center.y)))
-        trajectory_vec = (destination_point.x - self.center.x), (destination_point.y - self.center.y)
+        trajectory_vec = Point(((destination_point.x - self.center.x), (destination_point.y - self.center.y)))
         scalar_multiply = dir_vec.x * trajectory_vec.x + dir_vec.y * trajectory_vec.y
         dir_vec_module = sqrt(dir_vec.x ** 2 + dir_vec.y ** 2)
         trajectory_vec_module = sqrt(trajectory_vec.x ** 2 + trajectory_vec.y ** 2)
@@ -103,6 +103,9 @@ class Robot(Marker):
             angle = 0
         angle = self.get_angle_sign(destination_point, angle)
         return angle
+
+    def get_position(self):
+        return self.center
 
     def get_angle_sign(self, destination_point, angle):
         """ This func needed for computing angle sign
