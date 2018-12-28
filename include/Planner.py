@@ -4,6 +4,7 @@ from ompl import geometric as og
 from ompl.util import OMPL_ERROR
 import include.Constants as const
 from functools import partial
+from include.Fileds_objects import Point
 import numpy as np
 from matplotlib.path import Path
 
@@ -35,8 +36,6 @@ class Paths_planner():
                 tmp_targets = self.targets.copy()
                 robot_position = tmp_robots.pop(robot_id).get_center().remap_to_ompl_coord_system().get_xy()
                 target_position = tmp_targets.pop(robot_id).get_center().remap_to_ompl_coord_system().get_xy()
-
-
                 full_obstacles = []
 
                 if len(self.obstacles):
@@ -133,7 +132,7 @@ class Paths_planner():
         ps = og.PathSimplifier(space_info)
         shorteningPath = ps.shortcutPath(path)
         reduceVertices = ps.reduceVertices(path)
-        path.interpolate(int(path.length() * 2))
+        path.interpolate(int(path.length() * 1.1))
         return path
 
     def space_creation(self):
@@ -187,3 +186,13 @@ class Paths_planner():
         goal[1] = goal_pos[1]
         pdef.setStartAndGoalStates(start, goal)
         return pdef
+
+    def path_to_point_list(self, path):
+        states = path.getStates()
+        path_lst = []
+        for state in states:
+            x = state.getX()
+            y = state.getY()
+            cv_point = Point((x, y)).remap_to_img_coord_system()
+            path_lst.append(cv_point)
+        return path_lst
