@@ -7,6 +7,7 @@ from include.Planner import Paths_planner
 from include.Fileds_objects import Robot, Goal, Obstacle, Point
 from include.MarkersAnalizer import MarkerAnalizer
 import include.mqtt_utils as mqtt_utils
+from time import time
 
 
 # Init aruco parametrs
@@ -44,6 +45,8 @@ NUMBER_OF_CLIENTS = 1
 MAX_WORKERS = 10
 WORKER_TIME = 0.1
 MESSAGES_QOS = 2
+LAST_SENDING = time()
+SINDING_PERIOD = 0.5
 
 client = mqtt.Client("")
 
@@ -87,7 +90,7 @@ while RUN_CAPTURE:
                 planner.set_targets(goals)
                 planner.set_obstacles(obstacles)
 
-                paths, time = planner.multiple_paths_planning()
+                paths, time_el = planner.multiple_paths_planning()
 
                 if len(paths):
                     for path_id in paths.keys():
@@ -99,7 +102,11 @@ while RUN_CAPTURE:
                 robot = robots[list(robots.keys())[0]]
                 robot_position = robot.get_position()
                 angle = robot.get_angle_to_point(actual_pt)
-                mqtt_utils.send_angle(client, 5, msg_topic=MSG_TOPIC, qos=2, angle=angle)
+                now = time()
+                print(now - LAST_SENDING)
+                if now - LAST_SENDING > SINDING_PERIOD:
+                    mqtt_utils.send_angle(client, 5, msg_topic=MSG_TOPIC, qos=2, angle=angle)
+                    LAST_SENDING = time()
                 on_point = analizer.on_position(robot_position, actual_pt)
                 cv2.circle(img, (int(actual_pt.x), int(actual_pt.y)), 8, (0, 255, 0), 3)
                 if on_point:
@@ -108,10 +115,6 @@ while RUN_CAPTURE:
                     except:
                         print("Finish!")
                         RUN_CAPTURE = False
-
-
-
-
 
         if not isinstance(None, type(actual_path)):
             for pt in actual_path:
