@@ -68,26 +68,26 @@ void MotorController::controlByJoystick(short xCoord, short yCoord, float reduce
 {
 	if ((xCoord > -500 && xCoord < 500) && yCoord < -500) {
 
-	    rotation(MotorLeft, abs(yCoord/reduceSpeed), -yCoord);
-		rotation(MotorRight,abs(yCoord/reduceSpeed), yCoord);
+	    rotation(MotorLeft, abs(yCoord/reduceSpeed), yCoord);
+		rotation(MotorRight,abs(yCoord/reduceSpeed), -yCoord);
 		Serial.println("Moving forward");
 	}
 	
 	else if (xCoord >= 500 && yCoord <= 500) {
-		rotation(MotorRight, abs(xCoord/reduceSpeedSide), -yCoord);
-		rotation(MotorLeft, abs(xCoord/reduceSpeedSide), 0);
+		rotation(MotorRight, abs(xCoord/reduceSpeed), yCoord);
+		rotation(MotorLeft, abs(xCoord/reduceSpeedSide), -yCoord);
 		Serial.println("Moving right");
 	}
 
 	else if (xCoord < -500 && yCoord <= 500) {
-		rotation(MotorRight,abs(xCoord/reduceSpeedSide), 0);
-		rotation(MotorLeft, abs(xCoord/reduceSpeedSide), yCoord);
+		rotation(MotorRight,abs(xCoord/reduceSpeedSide), yCoord);
+		rotation(MotorLeft, abs(xCoord/reduceSpeed), -yCoord);
 		Serial.println("Moving left");
 	}
 
 	else if ((xCoord > -1000 && xCoord < 1000) && yCoord > 50) {
-	    rotation(MotorLeft,  abs(yCoord/reduceSpeed), -yCoord);
-		rotation(MotorRight, abs(yCoord/reduceSpeed), yCoord);
+	    rotation(MotorLeft,  abs(yCoord/reduceSpeed), yCoord);
+		rotation(MotorRight, abs(yCoord/reduceSpeed), -yCoord);
 		Serial.println("Moving back");
 	}
 	//else if (xCoord > 500 && yCoord >= -500) {
