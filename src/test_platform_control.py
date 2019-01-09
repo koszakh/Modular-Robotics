@@ -69,9 +69,11 @@ while RUN_CAPTURE:
     ret, img = stream.read()
     if ret:
         img = resize_image_to_square_size(img)
+        img_to_show = img.copy()
+
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         corners_np, ids_np, _ = aruco.detectMarkers(gray_img, aruco_dict, parameters=parameters)
-        aruco.drawDetectedMarkers(img, corners_np, ids_np)
+        aruco.drawDetectedMarkers(img_to_show, corners_np, ids_np)
 
         if type(ids_np) != type(None):
             ids = list(map(lambda x: x[0], ids_np))
@@ -103,12 +105,11 @@ while RUN_CAPTURE:
                 robot_position = robot.get_position()
                 angle = robot.get_angle_to_point(actual_pt)
                 now = time()
-                print(now - LAST_SENDING)
                 if now - LAST_SENDING > SINDING_PERIOD:
                     mqtt_utils.send_angle(client, 5, msg_topic=MSG_TOPIC, qos=2, angle=angle)
                     LAST_SENDING = time()
                 on_point = analizer.on_position(robot_position, actual_pt)
-                cv2.circle(img, (int(actual_pt.x), int(actual_pt.y)), 8, (0, 255, 0), 3)
+                cv2.circle(img_to_show, (int(actual_pt.x), int(actual_pt.y)), 8, (0, 255, 0), 3)
                 if on_point:
                     try:
                         actual_pt = actual_path.pop(0)
@@ -118,9 +119,9 @@ while RUN_CAPTURE:
 
         if not isinstance(None, type(actual_path)):
             for pt in actual_path:
-                cv2.circle(img, (int(pt.x), int(pt.y)), 5, (255, 255, 0), 8)
+                cv2.circle(img_to_show, (int(pt.x), int(pt.y)), 5, (255, 255, 0), 8)
 
-        cv2.imshow("Capture", img)
+        cv2.imshow("Capture", img_to_show)
 
         if cv2.waitKey(10) & 0xFF == 27:
             RUN_CAPTURE = not RUN_CAPTURE

@@ -25,6 +25,6 @@ iMax = 0.2
 
 # cv2 constants
 IMAGE_SIZE = 480
-CAMERA_INDEX = 0
+CAMERA_INDEX = 1
 
 EPS = 35
