@@ -35,20 +35,23 @@ void mqttClient::initClientLoop()
 
 void mqttClient::subscribe(int platform_id)
 {
-    char topic[64];
+    char angle_topic[64];
     char theme[64];
+    char finish_topic[64];
     char client_name[64];
     sprintf(theme, "Platform %d is connected!", platform_id);
-    sprintf(topic, "platforms/%d", platform_id);
+    sprintf(angle_topic, "platforms/%d", platform_id);
     sprintf(client_name, "platform_%d", platform_id);
+    sprintf(finish_topic, "on_finish/%d", platform_id);
     //Loop until we're reconnected
     while (!client->connected())
     {
         // Attempt to connect
         if (client->connect(client_name))
         {
-            client->subscribe(topic);
-
+            
+            client->subscribe(finish_topic);
+            client->subscribe(angle_topic);
             // Subscribe to topic
             client->publish("connected", theme);
         }
@@ -74,6 +77,12 @@ void mqttClient::setCallback(void (*callback)(char* topic, byte* message, unsign
 {
     client->setCallback(callback);
 }
+
+// void mqttClient::setCallbackFinish(void (*callbackFinish)(char* finish, byte* message, unsigned int length))
+// {
+//     client->setCallback(callbackFinish);
+// }
+
 
 void mqttClient:: convertValue(short xValue)
 {

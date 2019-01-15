@@ -24,7 +24,8 @@ short x, y, x1, x2;
 short frequency = 500;
 short xCoord;
 short yCoord;
-short correctValue = 0;
+short correctValue;
+short finishValue = -1;
 short errorValue;
 short hallSensorLeft = 0;
 short hallSensorRight = 0;
@@ -49,7 +50,7 @@ char outputData[10] = "Hi";
 
 const char* ssid = "iGarage";
 const char* password = "igarage18";
-const char* mqtt_server = "10.1.30.38";
+const char* mqtt_server = "10.1.30.46";
 
 mqttClient mqtt(ssid, password, mqtt_server);
 
@@ -60,42 +61,60 @@ void parseBLEData(std::string valueFromJoystick);
 
 void callback(char* topic, byte* message, unsigned int length)
 {
+    if (strcmp(topic, "platforms/5")==0) {
 
-    receivedData = "";
+    
+        receivedData = "";
 
-    for (int i = 0; i < length; i++)
-    {
-        receivedData += (char)message[i];
-        //Serial.print((char)message[i]);
+        for (int i = 0; i < length; i++)
+        {
+            receivedData += (char)message[i];
 
-        //correctValue = atoi(receivedData.c_str());
-
-        //driveMotor(correctValue);
-        //Serial.println(correctValue);
-        //splitindex = receivedData.find("/");
-        //valueX = receivedData.substr(0,splitindex);
-        //valueY = receivedData.substr(splitindex+1);
-        //xErrorValue = atoi(valueX.c_str());
-        //yErrorValue = atoi(valueY.c_str());
-        //Serial.print(correctValue);
-        //Serial.println(yErrorValue);
-
+            correctValue = atoi(receivedData.c_str());
+           
+        }
+        Serial.println(correctValue);
     }
+    else if ((strcmp(topic, "on_finish/5")==0)) {
+        receivedData = "";
 
-    correctValue = atoi(receivedData.c_str());
-    Serial.println(correctValue);
-
-    //xErrorValue = atoi(receivedData.c_str());
-    //Serial.println(xErrorValue);
-    //xErrorValue = atoi(receivedData.c_str());
-    //Serial.println(xErrorValue);
+        for (int i = 0; i < length; i++)
+        {
+        receivedData += (char)message[i];
+        finishValue = atoi(receivedData.c_str()); 
+        }
+        Serial.println(finishValue);
+         
+    }
+    
 }
+
+    //xErrorValue = atoi(receivedData.c_str());
+    //Serial.println(xErrorValue);
+    //xErrorValue = atoi(receivedData.c_str());
+    //Serial.println(xErrorValue);
+
+
+// void callbackFinish(char* finish, byte* message, unsigned int length)
+// {
+//     receivedData = "";
+
+//     for (int i = 0; i < length; i++)
+//     {
+//         receivedData += (char)message[i];
+       
+//     }
+//     finishValue = atoi(receivedData.c_str());
+//     //Serial.println(finishValue);
+// }
+
 
 void setup()
 {
     Serial.begin(115200);
     mqtt.setupWifi();
     mqtt.setCallback(*callback);
+    //mqtt.setCallbackFinish(*callbackFinish);
     DriveCar.setup(PIN_ENABLE_R,PIN_FORWARD_R,PIN_BACK_R,PIN_FORWARD_L,PIN_BACK_L,PIN_ENABLE_L, channel_R, channel_L);
     DriveCar.setupMotorDriver(channel_R, channel_L, frequency, resolution);
     pinMode(hallLeftPin, INPUT);
@@ -128,16 +147,25 @@ void loop()
      mqtt.initClientLoop();
      mqtt.subscribe(topic_id);
 
-     if (correctValue > 12) {
-         DriveCar.rotateLeft(correctValue);
+     if (finishValue == 0)
+     {
+        
+        if (correctValue > 5) {
+            DriveCar.rotateLeft(correctValue);
+        }
+        else if (correctValue < -5) {
+            DriveCar.rotateRight(correctValue);
+        }
+        else if (abs(correctValue) <= 5) {
+            DriveCar.moveForward(correctValue);
+        }
      }
-     else if (correctValue < -12) {
-         DriveCar.rotateRight(correctValue);
-     }
-     else if (abs(correctValue) <= 10) {
-         DriveCar.stop(correctValue);
-     }
-     Serial.println(correctValue);
+     else if (finishValue == 1)
+        {
+            DriveCar.stop(correctValue);
+        }
+     //Serial.println(correctValue);
+    
     // correctValue = 0;
     // hallSensorLeft = digitalRead(hallLeftPin);
     // hallSensorRight = digitalRead(hallRightPin);

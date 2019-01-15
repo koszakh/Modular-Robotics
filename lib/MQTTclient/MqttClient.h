@@ -25,6 +25,7 @@ class mqttClient
         void pubFeedback(const char* msg, int platform_id);
         void convertValue(short xValue);
         void setCallback(void (*func)(char* topic, byte* message, unsigned int length));
+        void setCallbackFinish(void (*func)(char* finish, byte* message, unsigned int length));
        
 
 };

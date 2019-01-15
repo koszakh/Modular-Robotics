@@ -34,6 +34,8 @@ public:
 
 	void stop(short correctValue);
 
+	void moveForward(short correctValue);
+
 	int channel;
 
 	void setupMotorDriver(uint8_t channel_Right, uint8_t channel_Left, short frequency, uint8_t resolution);

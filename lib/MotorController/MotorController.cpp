@@ -135,9 +135,9 @@ void MotorController::controlByCamera(short correctValue, float reduceSpeed, flo
 
 void MotorController::rotateLeft(short correctValue)
 {	
-	rotation(MotorRight, 300, 1);
-	rotation(MotorLeft, 300, 1);
-	delay(120);
+	rotation(MotorRight, 120, 1);
+	rotation(MotorLeft, 120, 1);
+	delay(80);
 	rotation(MotorLeft, 150, 0);
 	rotation(MotorRight,150, 0);
 
@@ -145,17 +145,23 @@ void MotorController::rotateLeft(short correctValue)
 
 void MotorController::rotateRight(short correctValue)
 {	
-	rotation(MotorRight, 300, -1);
-	rotation(MotorLeft, 300, -1);
-	delay(120);
+	rotation(MotorRight, 120, -1);
+	rotation(MotorLeft, 120, -1);
+	delay(80);
 	// delay(-correctValue*12);
 	rotation(MotorLeft, 150, 0);
  	rotation(MotorRight,150, 0);
 
 }
 
+void MotorController::moveForward(short correctValue)
+{
+	rotation(MotorLeft, 150, 1);
+	rotation(MotorRight, 150, -1);	
+}
+
 void MotorController::stop(short correctValue)
 {
-	rotation(MotorLeft, 180, -1);
-	rotation(MotorRight, 180, 1);	
+	rotation(MotorLeft, 180, 0);
+	rotation(MotorRight, 180, 0);	
 }
